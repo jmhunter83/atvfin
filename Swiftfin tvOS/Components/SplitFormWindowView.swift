@@ -28,6 +28,7 @@ struct SplitFormWindowView: View {
             .padding(.top)
             .scrollClipDisabled()
         }
+        .background(Color.black.ignoresSafeArea())
     }
 }
 

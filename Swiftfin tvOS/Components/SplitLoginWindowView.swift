@@ -57,6 +57,8 @@ struct SplitLoginWindowView<Leading: View, Trailing: View>: View {
                         .opacity(0.9)
                 }
                 .ignoresSafeArea()
+            } else {
+                Color.black.ignoresSafeArea()
             }
         }
     }

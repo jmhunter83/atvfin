@@ -94,11 +94,11 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
     private func didReceive(action: MediaPlayerManager._Action) {
         switch action {
         case .stop:
+            cancellables = []
+            timer.stop()
             if let item {
                 sendStopReport(for: item, seconds: manager?.seconds)
             }
-            timer.stop()
-            cancellables = []
             item = nil
         default: ()
         }
@@ -165,5 +165,10 @@ class MediaProgressObserver: ViewModel, MediaPlayerObserver {
             let request = Paths.reportPlaybackProgress(info)
             let _ = try await userSession.client.send(request)
         }
+    }
+
+    deinit {
+        timer.stop()
+        cancellables.removeAll()
     }
 }

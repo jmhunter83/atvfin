@@ -106,6 +106,11 @@ final class UISliderContainer<Value: BinaryFloatingPoint>: UIControl {
         fatalError("init(coder:) has not been implemented")
     }
 
+    deinit {
+        decelerationTimer?.invalidate()
+        decelerationTimer = nil
+    }
+
     private func setupViews() {
         addSubview(progressHostingView)
         NSLayoutConstraint.activate([

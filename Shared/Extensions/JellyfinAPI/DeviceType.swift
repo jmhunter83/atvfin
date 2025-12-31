@@ -184,53 +184,6 @@ enum DeviceType: String, Displayable, Codable, CaseIterable {
         }
     }
 
-    // MARK: - Client Image
-
-    var image: ImageResource {
-        switch self {
-        case .android:
-            return .deviceClientAndroid
-        case .apple:
-            return .deviceClientApple
-        case .chrome:
-            return .deviceBrowserChrome
-        case .edge:
-            return .deviceBrowserEdge
-        case .edgechromium:
-            return .deviceBrowserEdgechromium
-        case .finamp:
-            return .deviceClientFinamp
-        case .firefox:
-            return .deviceBrowserFirefox
-        case .homeAssistant:
-            return .deviceOtherHomeassistant
-        case .html5:
-            return .deviceBrowserHtml5
-        case .kodi:
-            return .deviceClientKodi
-        case .msie:
-            return .deviceBrowserMsie
-        case .opera:
-            return .deviceBrowserOpera
-        case .playstation:
-            return .deviceClientPlaystation
-        case .roku:
-            return .deviceClientRoku
-        case .safari:
-            return .deviceBrowserSafari
-        case .samsungtv:
-            return .deviceClientSamsungtv
-        case .webos:
-            return .deviceClientWebos
-        case .windows:
-            return .deviceClientWindows
-        case .xbox:
-            return .deviceClientXbox
-        case .other:
-            return .deviceOtherOther
-        }
-    }
-
     // MARK: - Client Color
 
     var clientColor: Color {

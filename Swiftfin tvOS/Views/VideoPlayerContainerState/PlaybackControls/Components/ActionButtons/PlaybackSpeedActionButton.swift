@@ -1,0 +1,61 @@
+//
+// Swiftfin is subject to the terms of the Mozilla Public
+// License, v2.0. If a copy of the MPL was not distributed with this
+// file, you can obtain one at https://mozilla.org/MPL/2.0/.
+//
+// Copyright (c) 2025 Jellyfin & Jellyfin Contributors
+//
+
+import SwiftUI
+
+extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
+
+    struct PlaybackSpeed: View {
+
+        @Environment(\.isInMenu)
+        private var isInMenu
+
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        private let presetRates: [Float] = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0]
+
+        private func isCurrentRate(_ rate: Float) -> Bool {
+            abs(manager.rate - rate) < 0.01
+        }
+
+        @ViewBuilder
+        private var content: some View {
+            ForEach(presetRates, id: \.self) { rate in
+                Button {
+                    manager.setRate(rate: rate)
+                } label: {
+                    if isCurrentRate(rate) {
+                        Label(rate.formatted(.playbackRate), systemImage: "checkmark")
+                    } else {
+                        Text(rate.formatted(.playbackRate))
+                    }
+                }
+            }
+        }
+
+        var body: some View {
+            Menu(
+                L10n.playbackSpeed,
+                systemImage: "speedometer"
+            ) {
+                if isInMenu {
+                    content
+                } else {
+                    Section(L10n.playbackSpeed) {
+                        content
+                    }
+                }
+            }
+            #if os(tvOS)
+            .menuStyle(.automatic)
+            #endif
+            .videoPlayerActionButtonTransition()
+        }
+    }
+}

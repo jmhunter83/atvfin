@@ -72,8 +72,7 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
                 EmptyView()
 //                GestureLock()
             case .playbackSpeed:
-                EmptyView()
-//                PlaybackRateMenu()
+                PlaybackSpeed()
 //            case .playbackQuality:
 //                PlaybackQuality()
             case .playNextItem:

@@ -99,4 +99,8 @@ class MediaPlayerItem: ViewModel, MediaPlayerObserver {
 
         observers.append(MediaProgressObserver(item: self))
     }
+
+    deinit {
+        observers.removeAll()
+    }
 }

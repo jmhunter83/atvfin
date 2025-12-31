@@ -31,14 +31,28 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
 
         @ViewBuilder
         private func content(playbackItem: MediaPlayerItem) -> some View {
-            ForEach(playbackItem.subtitleStreams.prepending(.none), id: \.index) { stream in
+            // "Off" option at the top with visual distinction
+            Button {
+                playbackItem.selectedSubtitleStreamIndex = -1
+            } label: {
+                if selectedSubtitleStreamIndex == -1 || selectedSubtitleStreamIndex == nil {
+                    Label(L10n.none, systemImage: "checkmark")
+                } else {
+                    Label(L10n.none, systemImage: "xmark.circle")
+                }
+            }
+
+            Divider()
+
+            // Subtitle streams with codec info
+            ForEach(playbackItem.subtitleStreams, id: \.index) { stream in
                 Button {
                     playbackItem.selectedSubtitleStreamIndex = stream.index ?? -1
                 } label: {
                     if selectedSubtitleStreamIndex == stream.index {
-                        Label(stream.displayTitle ?? L10n.unknown, systemImage: "checkmark")
+                        Label(stream.formattedSubtitleTitle, systemImage: "checkmark")
                     } else {
-                        Text(stream.displayTitle ?? L10n.unknown)
+                        Text(stream.formattedSubtitleTitle)
                     }
                 }
             }

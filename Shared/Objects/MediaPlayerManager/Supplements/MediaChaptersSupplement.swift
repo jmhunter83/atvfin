@@ -137,7 +137,142 @@ extension MediaChaptersSupplement {
             }
         }
 
-        var tvOSView: some View { EmptyView() }
+        var tvOSView: some View {
+            TVOSChapterBrowser(supplement: supplement)
+        }
+    }
+
+    // MARK: - tvOS Chapter Browser
+
+    struct TVOSChapterBrowser: View {
+
+        @EnvironmentObject
+        private var containerState: VideoPlayerContainerState
+        @EnvironmentObject
+        private var manager: MediaPlayerManager
+
+        @ObservedObject
+        private var supplement: MediaChaptersSupplement
+
+        @FocusState
+        private var focusedChapter: ChapterInfo.FullInfo.ID?
+
+        @State
+        private var activeSeconds: Duration = .zero
+
+        init(supplement: MediaChaptersSupplement) {
+            self.supplement = supplement
+        }
+
+        private var chapters: [ChapterInfo.FullInfo] {
+            supplement.chapters
+        }
+
+        private var currentChapter: ChapterInfo.FullInfo? {
+            chapters.last(where: { chapter in
+                guard let startSeconds = chapter.chapterInfo.startSeconds else { return false }
+                return startSeconds <= activeSeconds
+            })
+        }
+
+        var body: some View {
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    LazyHStack(spacing: 40) {
+                        ForEach(chapters) { chapter in
+                            TVOSChapterCard(
+                                chapter: chapter,
+                                isCurrentChapter: currentChapter?.id == chapter.id
+                            ) {
+                                guard let startSeconds = chapter.chapterInfo.startSeconds else { return }
+                                manager.proxy?.setSeconds(startSeconds)
+                                manager.setPlaybackRequestStatus(status: .playing)
+                            }
+                            .focused($focusedChapter, equals: chapter.id)
+                            .id(chapter.id)
+                        }
+                    }
+                    .padding(.horizontal, EdgeInsets.edgePadding * 2)
+                }
+                .focusSection()
+                .assign(manager.secondsBox.$value, to: $activeSeconds)
+                .onAppear {
+                    if let currentChapter {
+                        focusedChapter = currentChapter.id
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                            proxy.scrollTo(currentChapter.id, anchor: .center)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // MARK: - tvOS Chapter Card
+
+    struct TVOSChapterCard: View {
+
+        @Default(.accentColor)
+        private var accentColor
+
+        @FocusState
+        private var isFocused: Bool
+
+        let chapter: ChapterInfo.FullInfo
+        let isCurrentChapter: Bool
+        let action: () -> Void
+
+        var body: some View {
+            Button(action: action) {
+                VStack(alignment: .leading, spacing: 12) {
+                    // Chapter thumbnail
+                    ZStack {
+                        Color.black.opacity(0.3)
+
+                        ImageView(chapter.imageSource)
+                            .failure {
+                                Image(systemName: "photo")
+                                    .font(.largeTitle)
+                                    .foregroundStyle(.secondary)
+                            }
+
+                        // Play icon overlay when focused
+                        if isFocused {
+                            Image(systemName: "play.fill")
+                                .font(.system(size: 40))
+                                .foregroundStyle(.white.opacity(0.9))
+                        }
+                    }
+                    .aspectRatio(16 / 9, contentMode: .fit)
+                    .frame(width: 320, height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        if isCurrentChapter {
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(accentColor, lineWidth: 4)
+                        }
+                    }
+
+                    // Chapter info
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(chapter.chapterInfo.displayTitle)
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                            .lineLimit(2)
+
+                        Text(chapter.chapterInfo.startSeconds ?? .zero, format: .runtime)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(width: 320, alignment: .leading)
+                }
+            }
+            .buttonStyle(.card)
+            .focused($isFocused)
+            .scaleEffect(isFocused ? 1.05 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: isFocused)
+        }
     }
 
     struct ChapterPreview: View {

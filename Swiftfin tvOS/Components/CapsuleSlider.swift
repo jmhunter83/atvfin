@@ -13,9 +13,6 @@ struct CapsuleSlider<Value: BinaryFloatingPoint>: View {
     @Binding
     private var value: Value
 
-    @FocusState
-    private var isFocused: Bool
-
     private let total: Value
     private var onEditingChanged: (Bool) -> Void
 
@@ -52,5 +49,7 @@ private struct CapsuleSliderContent: SliderContentView {
         ProgressView(value: sliderState.value, total: sliderState.total)
             .progressViewStyle(PlaybackProgressViewStyle(cornerStyle: .round))
             .frame(height: 8)
+            .scaleEffect(sliderState.isFocused ? 1.05 : 1.0)
+            .animation(.easeInOut(duration: 0.2), value: sliderState.isFocused)
     }
 }

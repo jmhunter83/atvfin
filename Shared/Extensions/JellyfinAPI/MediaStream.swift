@@ -17,6 +17,67 @@ extension MediaStream {
 
     static var none: MediaStream = .init(displayTitle: L10n.none, index: -1)
 
+    // MARK: - Enhanced Display Titles
+
+    /// Returns a formatted audio stream title including codec and channel layout
+    /// Example: "English - AC3 5.1" or "Japanese - AAC Stereo"
+    var formattedAudioTitle: String {
+        var components: [String] = []
+
+        // Language/display title
+        if let title = displayTitle {
+            components.append(title)
+        }
+
+        // Codec and channel info
+        var codecInfo: [String] = []
+        if let codec = codec?.uppercased() {
+            codecInfo.append(codec)
+        }
+        if let layout = channelLayout {
+            codecInfo.append(layout)
+        } else if let channels = channels {
+            // Fallback to channel count if no layout string
+            switch channels {
+            case 1:
+                codecInfo.append("Mono")
+            case 2:
+                codecInfo.append("Stereo")
+            default:
+                codecInfo.append("\(channels)ch")
+            }
+        }
+
+        if !codecInfo.isEmpty {
+            components.append(codecInfo.joined(separator: " "))
+        }
+
+        return components.isEmpty ? L10n.unknown : components.joined(separator: " - ")
+    }
+
+    /// Returns a formatted subtitle stream title including format
+    /// Example: "English - SRT" or "Spanish - ASS"
+    var formattedSubtitleTitle: String {
+        // Special case for "None" option
+        if index == -1 {
+            return displayTitle ?? L10n.none
+        }
+
+        var components: [String] = []
+
+        // Language/display title
+        if let title = displayTitle {
+            components.append(title)
+        }
+
+        // Codec/format
+        if let codec = codec?.uppercased() {
+            components.append(codec)
+        }
+
+        return components.isEmpty ? L10n.unknown : components.joined(separator: " - ")
+    }
+
     var asVLCPlaybackChild: VLCVideoPlayer.PlaybackChild? {
         guard let deliveryURL, let client = Container.shared.currentUserSession()?.client else { return nil }
 

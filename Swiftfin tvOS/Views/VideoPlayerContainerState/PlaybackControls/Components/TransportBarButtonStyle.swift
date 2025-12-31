@@ -9,11 +9,11 @@
 import SwiftUI
 
 /// Button style for transport bar action buttons
-/// Uses glass effect on tvOS 18+ with focus states
+/// Uses glass effect on tvOS 18+ with press state feedback
+/// Note: @Environment(\.isFocused) doesn't work reliably in ButtonStyle,
+/// so we use configuration.isPressed for interaction feedback and show
+/// a subtle background always to indicate interactivity.
 struct TransportBarButtonStyle: ButtonStyle {
-
-    @Environment(\.isFocused)
-    private var isFocused
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -22,24 +22,20 @@ struct TransportBarButtonStyle: ButtonStyle {
             .padding(12)
             .background {
                 #if os(tvOS)
-                if isFocused {
-                    if #available(tvOS 18.0, *) {
-                        Capsule()
-                            .fill(.regularMaterial)
-                            .opacity(0.8)
-                    } else {
-                        Capsule()
-                            .fill(.white.opacity(0.3))
-                    }
+                if #available(tvOS 18.0, *) {
+                    Capsule()
+                        .fill(.regularMaterial)
+                        .opacity(configuration.isPressed ? 1.0 : 0.5)
+                } else {
+                    Capsule()
+                        .fill(.white.opacity(configuration.isPressed ? 0.5 : 0.2))
                 }
                 #else
-                if isFocused {
-                    Capsule()
-                        .fill(.white.opacity(0.3))
-                }
+                Capsule()
+                    .fill(.white.opacity(configuration.isPressed ? 0.5 : 0.2))
                 #endif
             }
-            .scaleEffect(isFocused ? 1.1 : 1.0)
-            .animation(.spring(response: 0.3), value: isFocused)
+            .scaleEffect(configuration.isPressed ? 1.15 : 1.0)
+            .animation(.spring(response: 0.2), value: configuration.isPressed)
     }
 }

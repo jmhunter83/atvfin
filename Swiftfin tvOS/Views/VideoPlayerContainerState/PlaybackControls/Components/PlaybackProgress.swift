@@ -9,11 +9,11 @@
 import Defaults
 import JellyfinAPI
 import SwiftUI
+import UIKit
 
 // TODO: bar color default to style
 // TODO: remove compact buttons?
 // TODO: capsule scale on editing
-// TODO: possible issue with runTimeSeconds == 0
 // TODO: live tv
 
 extension VideoPlayer.PlaybackControls {
@@ -36,6 +36,12 @@ extension VideoPlayer.PlaybackControls {
         @State
         private var sliderSize = CGSize.zero
 
+        @State
+        private var previewImage: UIImage?
+
+        @State
+        private var previewImageTask: Task<Void, Never>?
+
         private var isScrubbing: Bool {
             get {
                 containerState.isScrubbing
@@ -57,6 +63,31 @@ extension VideoPlayer.PlaybackControls {
 
         private var scrubbedSeconds: Duration {
             scrubbedSecondsBox.value
+        }
+
+        private var trickplayPreviewXOffset: CGFloat {
+            let previewWidth: CGFloat = 320
+            let halfWidth = previewWidth / 2
+            let p = sliderSize.width * scrubbedProgress
+            return clamp(p, min: halfWidth, max: sliderSize.width - halfWidth)
+        }
+
+        @ViewBuilder
+        private var trickplayPreview: some View {
+            if isScrubbing, let previewImage {
+                Image(uiImage: previewImage)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 320, height: 180)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .shadow(color: .black.opacity(0.5), radius: 8, x: 0, y: 4)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.white.opacity(0.3), lineWidth: 2)
+                    }
+                    .offset(x: trickplayPreviewXOffset - sliderSize.width / 2)
+                    .transition(.opacity)
+            }
         }
 
         @ViewBuilder
@@ -90,7 +121,6 @@ extension VideoPlayer.PlaybackControls {
             )
             .onEditingChanged { isEditing in
                 isScrubbing = isEditing
-                print(isEditing)
             }
             .frame(height: 50)
         }
@@ -101,8 +131,13 @@ extension VideoPlayer.PlaybackControls {
                     liveIndicator
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else {
-                    capsuleSlider
-                        .trackingSize($sliderSize)
+                    ZStack(alignment: .bottom) {
+                        trickplayPreview
+                            .padding(.bottom, 70)
+
+                        capsuleSlider
+                            .trackingSize($sliderSize)
+                    }
 
                     SplitTimeStamp()
                 }
@@ -111,6 +146,23 @@ extension VideoPlayer.PlaybackControls {
             .scaleEffect(isFocused ? 1.0 : 0.95)
             .animation(.easeInOut(duration: 0.3), value: isFocused)
             .foregroundStyle(isFocused ? Color.white : Color.white.opacity(0.8))
+            .onChange(of: scrubbedSeconds) { _, newSeconds in
+                guard isScrubbing else { return }
+                previewImageTask?.cancel()
+                previewImageTask = Task {
+                    guard !Task.isCancelled else { return }
+                    let image = await manager.playbackItem?.previewImageProvider?.image(for: newSeconds)
+                    guard !Task.isCancelled else { return }
+                    previewImage = image
+                }
+            }
+            .onChange(of: isScrubbing) { _, scrubbing in
+                if !scrubbing {
+                    previewImageTask?.cancel()
+                    previewImageTask = nil
+                    previewImage = nil
+                }
+            }
         }
     }
 }

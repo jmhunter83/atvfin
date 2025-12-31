@@ -36,9 +36,9 @@ extension VideoPlayer.PlaybackControls.NavigationBar.ActionButtons {
                     playbackItem.selectedAudioStreamIndex = stream.index ?? -1
                 } label: {
                     if selectedAudioStreamIndex == stream.index {
-                        Label(stream.displayTitle ?? L10n.unknown, systemImage: "checkmark")
+                        Label(stream.formattedAudioTitle, systemImage: "checkmark")
                     } else {
-                        Text(stream.displayTitle ?? L10n.unknown)
+                        Text(stream.formattedAudioTitle)
                     }
                 }
             }

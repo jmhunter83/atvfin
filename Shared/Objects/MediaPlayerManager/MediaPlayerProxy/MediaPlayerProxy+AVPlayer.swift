@@ -137,6 +137,13 @@ class AVMediaPlayerProxy: VideoMediaPlayerProxy {
         AVPlayerView()
             .environmentObject(self)
     }
+
+    deinit {
+        statusObserver?.invalidate()
+        timeControlStatusObserver?.invalidate()
+        managerItemObserver?.cancel()
+        managerStateObserver?.cancel()
+    }
 }
 
 extension AVMediaPlayerProxy {
@@ -163,6 +170,12 @@ extension AVMediaPlayerProxy {
     }
 
     private func playNew(item: MediaPlayerItem) {
+        // Invalidate existing observers before creating new ones
+        statusObserver?.invalidate()
+        statusObserver = nil
+        timeControlStatusObserver?.invalidate()
+        timeControlStatusObserver = nil
+
         let newAVPlayerItem = AVPlayerItem(url: item.url)
         newAVPlayerItem.externalMetadata = item.baseItem.avMetadata
 
