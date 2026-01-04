@@ -10,7 +10,17 @@ import XCTest
 @testable import Swiftfin_tvOS
 
 /// Example unit tests for DownloadTask
-/// These tests demonstrate best practices for testing download functionality
+/// 
+/// NOTE: These are example tests demonstrating structure and best practices.
+/// The mock implementations are minimal placeholders. In a real test suite, you would:
+/// 1. Create proper mock objects or use a mocking framework
+/// 2. Set up test doubles for dependencies (UserSession, FileManager, etc.)
+/// 3. Use dependency injection to inject mocks
+/// 
+/// To use these tests:
+/// 1. Add this file to your test target in Xcode
+/// 2. Implement proper mock objects based on your data models
+/// 3. Update @testable import to match your module name
 final class DownloadTaskTests: XCTestCase {
 
     var sut: DownloadTask!
@@ -94,12 +104,22 @@ final class DownloadTaskTests: XCTestCase {
         // TODO: Implement proper mock object creation
         // This is a placeholder - you'll need to create a proper mock
         // based on your BaseItemDto structure
-        fatalError("Implement mock item creation")
+        
+        // For now, return a minimal valid item
+        var item = BaseItemDto()
+        item.id = "test-item-123"
+        item.name = "Test Item"
+        return item
     }
 
     private func createMockItemWithoutID() -> BaseItemDto {
         // TODO: Implement mock object without ID
-        fatalError("Implement mock item creation without ID")
+        // Return item without ID for testing error cases
+        
+        var item = BaseItemDto()
+        item.name = "Test Item Without ID"
+        // Explicitly don't set the ID
+        return item
     }
 }
 
