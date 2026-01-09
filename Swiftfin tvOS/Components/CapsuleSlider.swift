@@ -58,14 +58,14 @@ private struct CapsuleSliderContent: SliderContentView {
 
     var body: some View {
         VStack(spacing: 8) {
-            // Scrub mode indicator
+            // Skip mode indicator - shown when clicks detected
             if sliderState.isEditing {
                 HStack(spacing: 6) {
-                    Image(systemName: "arrow.left.arrow.right")
+                    Image(systemName: "forward.fill")
                         .font(.system(size: 12, weight: .semibold))
-                    Text("SCRUBBING")
+                    Text("SKIP READY")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                    Text("• Swipe to seek • Click to confirm")
+                    Text("• Swipe left/right to skip")
                         .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(.secondary)
                 }

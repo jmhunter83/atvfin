@@ -149,6 +149,15 @@ extension VLCMediaPlayerProxy {
                 .filter { $0.deliveryMethod == .external }
                 .compactMap(\.asVLCPlaybackChild)
 
+            // Increase buffer size to reduce audio hiccups during track changes
+            configuration.options = [
+                "network-caching": 5000, // 5 seconds network buffer (default 1000ms)
+                "file-caching": 5000, // 5 seconds file buffer
+                "live-caching": 5000, // 5 seconds live stream buffer
+                "clock-jitter": 0, // Disable clock jitter compensation
+                "clock-synchro": 0, // Disable clock sync (reduces latency sensitivity)
+            ]
+
             return configuration
         }
 
