@@ -36,6 +36,7 @@ class AVMediaPlayerProxy: VideoMediaPlayerProxy {
     private var timeObserver: Any!
     private var managerItemObserver: AnyCancellable?
     private var managerStateObserver: AnyCancellable?
+    private var currentItemID: String?
 
     weak var manager: MediaPlayerManager? {
         didSet {
@@ -45,10 +46,13 @@ class AVMediaPlayerProxy: VideoMediaPlayerProxy {
 
             if let manager {
                 managerItemObserver = manager.$playbackItem
-                    .sink { playbackItem in
-                        if let playbackItem {
-                            self.playNew(item: playbackItem)
-                        }
+                    .sink { [weak self] playbackItem in
+                        guard let self, let playbackItem else { return }
+                        // Prevent duplicate playback of the same item
+                        let itemID = playbackItem.baseItem.id ?? ""
+                        guard itemID != self.currentItemID else { return }
+                        self.currentItemID = itemID
+                        self.playNew(item: playbackItem)
                     }
 
                 managerStateObserver = manager.$state
@@ -188,6 +192,7 @@ extension AVMediaPlayerProxy {
     private func playbackStopped() {
         player.pause()
         player.replaceCurrentItem(with: nil)
+        currentItemID = nil
 
         // Remove time observer synchronously - async dispatch may not execute before deallocation
         if let timeObserver {
