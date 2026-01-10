@@ -75,17 +75,49 @@ extension VideoPlayer {
         private var titleOverlay: some View {
             if !isPresentingSupplement {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(manager.item.displayTitle)
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                        .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.5), radius: 8)
+                    if manager.item.type == .episode {
+                        // Episode: Show S#E# • Series Name • Episode Title • Year
+                        if let seasonEpisodeLabel = manager.item.seasonEpisodeLabel {
+                            Text(seasonEpisodeLabel)
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(.white.opacity(0.9))
+                                .shadow(color: .black.opacity(0.5), radius: 8)
+                        }
 
-                    if let year = manager.item.premiereDateYear {
-                        Text(year)
+                        if let seriesName = manager.item.seriesName {
+                            Text(seriesName)
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundStyle(.white)
+                                .shadow(color: .black.opacity(0.5), radius: 8)
+                        }
+
+                        Text(manager.item.displayTitle)
                             .font(.title3)
                             .foregroundStyle(.white.opacity(0.8))
                             .shadow(color: .black.opacity(0.5), radius: 8)
+
+                        if let year = manager.item.premiereDateYear {
+                            Text(year)
+                                .font(.callout)
+                                .foregroundStyle(.white.opacity(0.7))
+                                .shadow(color: .black.opacity(0.5), radius: 8)
+                        }
+                    } else {
+                        // Non-episode: Show Title • Year
+                        Text(manager.item.displayTitle)
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .shadow(color: .black.opacity(0.5), radius: 8)
+
+                        if let year = manager.item.premiereDateYear {
+                            Text(year)
+                                .font(.title3)
+                                .foregroundStyle(.white.opacity(0.8))
+                                .shadow(color: .black.opacity(0.5), radius: 8)
+                        }
                     }
                 }
                 .padding(.leading, 80)
@@ -106,7 +138,6 @@ extension VideoPlayer {
                         Spacer()
 
                         NavigationBar.ActionButtons()
-                            .focusSection()
                     }
                     .focusGuide(focusGuide, tag: "actionButtons", bottom: "playbackProgress")
 

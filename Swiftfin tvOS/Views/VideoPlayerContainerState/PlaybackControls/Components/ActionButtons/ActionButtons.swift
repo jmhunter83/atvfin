@@ -92,34 +92,46 @@ extension VideoPlayer.PlaybackControls.NavigationBar {
             }
         }
 
-        @ViewBuilder
-        private func buttonGroup(_ buttons: [VideoPlayerActionButton]) -> some View {
-            if buttons.isNotEmpty {
-                HStack(spacing: 8) {
-                    ForEach(buttons, content: view(for:))
+        /// Define button groups in display order
+        private static let buttonGroups: [[VideoPlayerActionButton]] = [
+            [.playPreviousItem, .playNextItem, .autoPlay], // Queue group
+            [.subtitles, .audio], // Tracks group
+            [.info, .episodes], // Content group
+            [.playbackSpeed, .playbackQuality], // Settings group
+            [.aspectFill], // View group
+        ]
+
+        /// Get the group index for a button (used for spacing)
+        private func groupIndex(for button: VideoPlayerActionButton) -> Int {
+            for (index, group) in Self.buttonGroups.enumerated() {
+                if group.contains(button) {
+                    return index
                 }
             }
+            return -1
         }
 
         var body: some View {
-            // Compute once and filter for each group
             let buttons = allActionButtons
 
-            HStack(spacing: 24) {
-                // Queue group: ◀️ ▶️ 🔁
-                buttonGroup(buttons.filter { [.playPreviousItem, .playNextItem, .autoPlay].contains($0) })
+            // Flat HStack with all buttons - no nesting
+            HStack(spacing: 8) {
+                ForEach(Array(buttons.enumerated()), id: \.element) { index, button in
+                    // Add extra spacing between groups (not before first button)
+                    if index > 0 {
+                        let prevButton = buttons[index - 1]
+                        let prevGroup = groupIndex(for: prevButton)
+                        let currentGroup = groupIndex(for: button)
 
-                // Tracks group: CC 🔊
-                buttonGroup(buttons.filter { [.subtitles, .audio].contains($0) })
+                        // Add spacer when transitioning between groups
+                        if prevGroup != currentGroup {
+                            Spacer()
+                                .frame(width: 16)
+                        }
+                    }
 
-                // Content group: ℹ️ 📺
-                buttonGroup(buttons.filter { [.info, .episodes].contains($0) })
-
-                // Settings group: ⏱️ 📺
-                buttonGroup(buttons.filter { [.playbackSpeed, .playbackQuality].contains($0) })
-
-                // View group: ⬜
-                buttonGroup(buttons.filter { [.aspectFill].contains($0) })
+                    view(for: button)
+                }
             }
             .labelStyle(.iconOnly)
         }

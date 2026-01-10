@@ -178,6 +178,28 @@ extension ItemView {
                         }
                     }
 
+                    // Next episode indicator for series
+                    if viewModel.item.type == .series,
+                       let playButtonItem = viewModel.playButtonItem,
+                       playButtonItem.type == .episode,
+                       let seasonEpisodeLabel = playButtonItem.seasonEpisodeLabel
+                    {
+                        HStack(spacing: 8) {
+                            Text(L10n.continue)
+                                .foregroundStyle(.white.opacity(0.7))
+                            Text(seasonEpisodeLabel)
+                                .fontWeight(.semibold)
+                            if let episodeTitle = playButtonItem.name {
+                                Text("·")
+                                    .foregroundStyle(.white.opacity(0.5))
+                                Text(episodeTitle)
+                                    .lineLimit(1)
+                            }
+                        }
+                        .font(.headline)
+                        .foregroundStyle(.white.opacity(0.9))
+                    }
+
                     // Overview - spans full width
                     OverviewView(item: viewModel.item)
                         .taglineLineLimit(1)
@@ -205,6 +227,20 @@ extension ItemView {
                             .frame(height: 100)
 
                         Spacer()
+                    }
+
+                    // Scroll indicator for series (shows more content below)
+                    if viewModel.item.type == .series {
+                        VStack(spacing: 4) {
+                            Text(L10n.episodes)
+                                .font(.caption)
+                                .fontWeight(.medium)
+                            Image(systemName: "chevron.down")
+                                .font(.caption)
+                        }
+                        .foregroundStyle(.white.opacity(0.5))
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 20)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
